@@ -37,6 +37,11 @@ namespace Microsoft.Health.Fhir.Core.Features.Operations.Export
 
             ResourceElement resource = _resourceDeserializer.DeserializeRaw(resourceWrapper.RawResource, resourceWrapper.Version, resourceWrapper.LastModified);
 
+            return Serialize(resource);
+        }
+
+        public byte[] Serialize(ResourceElement resource)
+        {
             string resourceData = _fhirJsonSerializer.SerializeToString(resource.ToPoco<Resource>());
 
             byte[] bytesToWrite = Encoding.UTF8.GetBytes($"{resourceData}\n");

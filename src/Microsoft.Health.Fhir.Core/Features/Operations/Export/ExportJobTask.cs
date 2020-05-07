@@ -9,6 +9,8 @@ using System.Globalization;
 using System.Net;
 using System.Threading;
 using EnsureThat;
+using Fhir.Anonymizer.Core;
+using Hl7.Fhir.ElementModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Core;
@@ -18,6 +20,7 @@ using Microsoft.Health.Fhir.Core.Features.Operations.Export.ExportDestinationCli
 using Microsoft.Health.Fhir.Core.Features.Operations.Export.Models;
 using Microsoft.Health.Fhir.Core.Features.Persistence;
 using Microsoft.Health.Fhir.Core.Features.Search;
+using Microsoft.Health.Fhir.Core.Models;
 using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.Health.Fhir.Core.Features.Operations.Export
@@ -29,6 +32,7 @@ namespace Microsoft.Health.Fhir.Core.Features.Operations.Export
         private readonly Func<IScoped<ISearchService>> _searchServiceFactory;
         private readonly IResourceToByteArraySerializer _resourceToByteArraySerializer;
         private readonly IExportDestinationClient _exportDestinationClient;
+        private readonly ResourceDeserializer _resourceDeserializer;
         private readonly ILogger _logger;
 
         // Currently we will have only one file per resource type. In the future we will add the ability to split
@@ -45,6 +49,7 @@ namespace Microsoft.Health.Fhir.Core.Features.Operations.Export
             Func<IScoped<ISearchService>> searchServiceFactory,
             IResourceToByteArraySerializer resourceToByteArraySerializer,
             IExportDestinationClient exportDestinationClient,
+            ResourceDeserializer resourceDeserializer,
             ILogger<ExportJobTask> logger)
         {
             EnsureArg.IsNotNull(fhirOperationDataStoreFactory, nameof(fhirOperationDataStoreFactory));
@@ -52,6 +57,7 @@ namespace Microsoft.Health.Fhir.Core.Features.Operations.Export
             EnsureArg.IsNotNull(searchServiceFactory, nameof(searchServiceFactory));
             EnsureArg.IsNotNull(resourceToByteArraySerializer, nameof(resourceToByteArraySerializer));
             EnsureArg.IsNotNull(exportDestinationClient, nameof(exportDestinationClient));
+            EnsureArg.IsNotNull(resourceDeserializer, nameof(resourceDeserializer));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _fhirOperationDataStoreFactory = fhirOperationDataStoreFactory;
@@ -59,6 +65,7 @@ namespace Microsoft.Health.Fhir.Core.Features.Operations.Export
             _searchServiceFactory = searchServiceFactory;
             _resourceToByteArraySerializer = resourceToByteArraySerializer;
             _exportDestinationClient = exportDestinationClient;
+            _resourceDeserializer = resourceDeserializer;
             _logger = logger;
         }
 
@@ -230,8 +237,15 @@ namespace Microsoft.Health.Fhir.Core.Features.Operations.Export
                     _resourceTypeToFileInfoMapping.Add(resourceType, exportFileInfo);
                 }
 
+                ResourceElement resource = _resourceDeserializer.DeserializeRaw(resourceWrapper.RawResource, resourceWrapper.Version, resourceWrapper.LastModified);
+
+                AnonymizerEngine.InitializeFhirPathExtensionSymbols();
+                AnonymizerEngine engine = AnonymizerEngine.CreateWithFileContext(@"C:\workspace\FHIR-Tools-for-Anonymization\src\Fhir.Anonymizer.Tool\configuration-sample.json", " ", " ");
+                ElementNode node = engine.AnonymizeElementNode(ElementNode.FromElement(resource.Instance));
+                resource = new ResourceElement(node);
+
                 // Serialize into NDJson and write to the file.
-                byte[] bytesToWrite = _resourceToByteArraySerializer.Serialize(resourceWrapper);
+                byte[] bytesToWrite = _resourceToByteArraySerializer.Serialize(resource);
 
                 await _exportDestinationClient.WriteFilePartAsync(exportFileInfo.FileUri, partId, bytesToWrite, cancellationToken);
 

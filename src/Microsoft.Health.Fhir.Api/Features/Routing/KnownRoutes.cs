@@ -29,6 +29,7 @@ namespace Microsoft.Health.Fhir.Api.Features.Routing
         public const string ResourceTypeByIdAndVid = ResourceTypeByIdHistory + "/" + VidRouteSegment;
 
         public const string Export = "$export";
+        public const string ExportAnonymizaedData = "$export-anonymized-data";
         public const string ExportResourceType = ResourceType + "/" + Export;
         public const string ExportResourceTypeById = ResourceTypeById + "/" + Export;
         public const string ExportJobLocation = OperationsConstants.Operations + "/" + OperationsConstants.Export + "/" + IdRouteSegment;

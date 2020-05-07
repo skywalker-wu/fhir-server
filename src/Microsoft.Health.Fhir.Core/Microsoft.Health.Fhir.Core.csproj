@@ -52,6 +52,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Fhir.Anonymizer.Core">
+      <HintPath>..\..\..\FHIR-Tools-for-Anonymization\src\Fhir.Anonymizer.Core\bin\Release\netcoreapp3.1\Fhir.Anonymizer.Core.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

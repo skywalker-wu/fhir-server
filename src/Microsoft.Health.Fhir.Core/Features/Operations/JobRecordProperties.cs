@@ -64,5 +64,7 @@ namespace Microsoft.Health.Fhir.Core.Features.Operations
         public const string FailureDetails = "failureDetails";
 
         public const string Since = "since";
+
+        public const string Anonymized = "anonymized";
     }
 }

@@ -17,7 +17,7 @@ namespace Microsoft.Health.Fhir.Core.Features.Operations.Export.Models
     /// </summary>
     public class ExportJobRecord
     {
-        public ExportJobRecord(Uri requestUri, string resourceType, string hash, IReadOnlyCollection<KeyValuePair<string, string>> requestorClaims = null, PartialDateTime since = null)
+        public ExportJobRecord(Uri requestUri, string resourceType, string hash, IReadOnlyCollection<KeyValuePair<string, string>> requestorClaims = null, PartialDateTime since = null, bool anonymized = false)
         {
             EnsureArg.IsNotNull(requestUri, nameof(requestUri));
             EnsureArg.IsNotNullOrWhiteSpace(hash, nameof(hash));
@@ -31,6 +31,7 @@ namespace Microsoft.Health.Fhir.Core.Features.Operations.Export.Models
             // Default values
             SchemaVersion = 1;
             Id = Guid.NewGuid().ToString();
+            Anonymized = anonymized;
             Status = OperationStatus.Queued;
 
             QueuedTime = Clock.UtcNow;
@@ -88,5 +89,8 @@ namespace Microsoft.Health.Fhir.Core.Features.Operations.Export.Models
 
         [JsonProperty(JobRecordProperties.Since)]
         public PartialDateTime Since { get; private set; }
+
+        [JsonProperty(JobRecordProperties.Anonymized)]
+        public bool Anonymized { get; private set; }
     }
 }

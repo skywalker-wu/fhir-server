@@ -30,6 +30,21 @@ namespace Microsoft.Health.Fhir.Core.Extensions
             return response;
         }
 
+        public static async Task<CreateExportResponse> ExportAnonymizedDataAsync(
+            this IMediator mediator,
+            Uri requestUri,
+            PartialDateTime since,
+            CancellationToken cancellationToken)
+        {
+            EnsureArg.IsNotNull(mediator, nameof(mediator));
+            EnsureArg.IsNotNull(requestUri, nameof(requestUri));
+
+            var request = new CreateExportRequest(requestUri, since: since, anonymized: true);
+
+            CreateExportResponse response = await mediator.Send(request, cancellationToken);
+            return response;
+        }
+
         public static async Task<GetExportResponse> GetExportStatusAsync(this IMediator mediator, Uri requestUri, string jobId, CancellationToken cancellationToken)
         {
             EnsureArg.IsNotNull(mediator, nameof(mediator));

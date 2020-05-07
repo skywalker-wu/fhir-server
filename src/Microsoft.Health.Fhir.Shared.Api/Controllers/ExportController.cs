@@ -91,6 +91,25 @@ namespace Microsoft.Health.Fhir.Api.Controllers
         }
 
         [HttpGet]
+        [Route(KnownRoutes.ExportAnonymizaedData)]
+        [ServiceFilter(typeof(ValidateExportRequestFilterAttribute))]
+        [AuditEventType(AuditEventSubType.Export)]
+        public async Task<IActionResult> ExportAnonymizedData([FromQuery(Name = KnownQueryParameterNames.Since)] PartialDateTime since)
+        {
+            if (!_exportConfig.Enabled)
+            {
+                throw new RequestNotValidException(string.Format(Resources.OperationNotEnabled, OperationsConstants.Export));
+            }
+
+            CreateExportResponse response = await _mediator.ExportAnonymizedDataAsync(_fhirRequestContextAccessor.FhirRequestContext.Uri, since, HttpContext.RequestAborted);
+
+            var exportResult = ExportResult.Accepted();
+            exportResult.SetContentLocationHeader(_urlResolver, OperationsConstants.Export, response.JobId);
+
+            return exportResult;
+        }
+
+        [HttpGet]
         [Route(KnownRoutes.ExportResourceType)]
         [ServiceFilter(typeof(ValidateExportRequestFilterAttribute))]
         [AuditEventType(AuditEventSubType.Export)]
