@@ -27,7 +27,7 @@ namespace Microsoft.Health.Fhir.Azure
                 .Transient()
                 .AsService<IExportDestinationClient>();
 
-            fhirServerBuilder.Services.Add<ExportDestinationArtifactProvider>()
+            fhirServerBuilder.Services.Add<AzureContainerRegistryArtifactProvider>()
                 .Transient()
                 .AsService<IArtifactProvider>();
 
